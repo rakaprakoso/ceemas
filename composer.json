@@ -1,0 +1,14 @@
+{
+    "name": "rakadprakoso/cemas",
+    "description": "Content Management System to avoid cemas",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "rdprakoso16",
+            "email": "rakaprakoso2@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
