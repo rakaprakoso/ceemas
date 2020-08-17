@@ -9,5 +9,10 @@
             "email": "rakaprakoso2@gmail.com"
         }
     ],
-    "require": {}
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "rakadprakoso\\cemas\\": "src/"
+        }
+    }
 }
