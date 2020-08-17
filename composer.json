@@ -14,5 +14,12 @@
         "psr-4": {
             "rakadprakoso\\cemas\\": "src/"
         }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "rakadprakoso\\cemas\\CemasServiceProvider"
+            ]
+        }
     }
 }
