@@ -1,6 +1,6 @@
 <?php
 
-namespace RakaDPrakoso\Cemas;
+namespace rakadprakoso\cemas;
 
 use Illuminate\Http\Request;
 use App\Http\Requests;

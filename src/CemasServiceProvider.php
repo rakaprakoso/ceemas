@@ -1,6 +1,6 @@
 <?php
 
-namespace RakaDPrakoso\Cemas;
+namespace rakadprakoso\cemas;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -13,7 +13,7 @@ class CemasServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->make('RakaDPrakoso\Cemas\CemasController');
+        $this->app->make('rakadprakoso\cemas\CemasController');
         $this->loadViewsFrom(__DIR__.'/views', 'cemas');
         
        
