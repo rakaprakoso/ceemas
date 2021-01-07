@@ -11,7 +11,7 @@ class CemasController extends Controller
     //
     public function home(){
         
-	    return view('cemas::index');
+	    return view('cemas::admin.page.index');
     }
 
     public function add($a, $b){
