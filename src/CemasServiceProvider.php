@@ -14,9 +14,10 @@ class CemasServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->make('rakadprakoso\cemas\CemasController');
+        $this->app->make('rakadprakoso\cemas\controllers\admin\PostController');
         $this->loadViewsFrom(__DIR__.'/views', 'cemas');
-        
-       
+
+
     }
 
     /**
@@ -31,5 +32,6 @@ class CemasServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/assets' => public_path('rakadprakoso/cemas'),
         ], 'public');
+        $this->loadMigrationsFrom(__DIR__.'/database/migrations');
     }
 }
