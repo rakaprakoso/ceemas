@@ -7,9 +7,10 @@ use Rakadprakoso\Ceemas\app\Traits\helper;
 use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
+use Rakadprakoso\Ceemas\app\Controllers\CeemasGlobalDataController;
 
 
-class PostController extends Controller
+class PostController extends CeemasGlobalDataController
 {
     use helper;
     /**
@@ -22,7 +23,7 @@ class PostController extends Controller
 
         /*if ($request->session()->has('username')) {
             $post = Post::all();
-            return view('cemas::admin.post.index', compact('post'));
+            return view('ceemas::admin.post.index', compact('post'));
         }else {
             return redirect('/ia-admin');
         }*/
@@ -38,7 +39,7 @@ class PostController extends Controller
      */
     public function create(Request $request)
     {
-        return view('cemas::admin.post.create');
+        return view('ceemas::admin.post.create');
     }
 
     /**
@@ -98,7 +99,7 @@ class PostController extends Controller
      */
     public function show(Post $post,Request $request)
     {
-        return view('cemas::admin.post.show', compact('post'));
+        return view('ceemas::admin.post.show', compact('post'));
     }
 
     /**
@@ -110,7 +111,7 @@ class PostController extends Controller
     public function edit($post,Request $request)
     {
         $post = Post::where('id',$post)->first();
-        return view('cemas::admin.post.create', compact('post'));
+        return view('ceemas::admin.post.create', compact('post'));
     }
 
     /**

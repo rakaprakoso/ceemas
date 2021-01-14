@@ -9,6 +9,7 @@ use Rakadprakoso\Ceemas\app\Models\Config;
 use Rakadprakoso\Ceemas\app\Models\GlobalData;
 use Rakadprakoso\Ceemas\Services\ConfigService\ConfigRepository;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator;
 use View;
 
 class CeemasServiceProvider extends ServiceProvider
@@ -52,6 +53,8 @@ class CeemasServiceProvider extends ServiceProvider
         $router = $this->app->make(Router::class);
         $router->aliasMiddleware('ceemas_auth', CheckRole::class);
         $router->aliasMiddleware('ceemas_dashboard', CheckDashboard::class);
+        Paginator::defaultView('ceemas::pagination.bootstrap-4');
+        Paginator::defaultSimpleView('ceemas::pagination.bootstrap-4');
         //View::share($shareddata);
         /*$raka = "Raka";
         $config = resolve(ConfigRepository::class);

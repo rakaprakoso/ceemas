@@ -1,5 +1,5 @@
-@extends('cemas::admin.layout.main')
-@inject('helper', 'rakadprakoso\cemas\app\traits\helperForBlade')
+@extends('ceemas::admin.layout.dashboard')
+@inject('helper', 'Rakadprakoso\Ceemas\app\Traits\helperForBlade')
 @section('additional_head')
 
 <!-- Custom -->
@@ -193,6 +193,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Tags</label>
+                                <input type="text" value="Amsterdam,Washington,Sydney,Beijing,Cairo" data-role="tagsinput" />
                                 <select name="tag" multiple data-role="tagsinput" class="form-control"
                                     style="width: 100%;">
                                     <option value="Amsterdam">Amsterdam</option>

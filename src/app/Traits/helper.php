@@ -22,11 +22,15 @@ trait helper
     }
     public function checkCrudType(){
         $type = collect(request()->segments())->last();
-        return $type == 'edit' ? 'Edit' : 'New';
+        return $type == 'edit' ? 'Edit' : 'Add New';
     }
     public function isCrudEdit(){
         $type = collect(request()->segments())->last();
         return $type == 'edit' ? true : false;
+    }
+    public function isCategory(){
+        $type = collect(request()->segments())[1];
+        return $type == 'category' ? true : false;
     }
 
     //Role Check
