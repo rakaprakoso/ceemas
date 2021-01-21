@@ -53,6 +53,7 @@ class CeemasServiceProvider extends ServiceProvider
         $router = $this->app->make(Router::class);
         $router->aliasMiddleware('ceemas_auth', CheckRole::class);
         $router->aliasMiddleware('ceemas_dashboard', CheckDashboard::class);
+        //$router->getMiddleware(\Illuminate\Session\Middleware\StartSession::class);
         Paginator::defaultView('ceemas::pagination.bootstrap-4');
         Paginator::defaultSimpleView('ceemas::pagination.bootstrap-4');
         //View::share($shareddata);

@@ -3,16 +3,26 @@
 namespace Rakadprakoso\Ceemas\app\Controllers\Admin;
 
 use Rakadprakoso\Ceemas\app\models\Post;
+use Rakadprakoso\Ceemas\app\models\PostCategory;
 use Rakadprakoso\Ceemas\app\Traits\helper;
 use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use Rakadprakoso\Ceemas\app\Controllers\CeemasGlobalDataController;
+use Rakadprakoso\Ceemas\app\PostCategory as PC;
+use Validator;
 
 
 class PostController extends CeemasGlobalDataController
 {
     use helper;
+    public $PC;
+
+    public function __construct(PC $PC)
+    {
+        parent::__construct();
+        $this->PC = $PC;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -39,7 +49,57 @@ class PostController extends CeemasGlobalDataController
      */
     public function create(Request $request)
     {
-        return view('ceemas::admin.post.create');
+        $category = $this->PC->data();
+        return view('ceemas::admin.post.create')
+        ->with($category);
+    }
+
+    private function sendData($request, $id=null){
+        $this->validate($request, [
+			'title' => 'required',
+            'published_at' => 'required',
+			'url' => 'required',
+        ]);
+        $post = $id == null ? New Post : Post::find($id);
+        $post->title = $request->title;
+        $post->author_id = $request->session()->get('user_id');
+        $post->url = $request->url;
+        $post->content = $request->content;
+        $post->thumbnail_img = $request->thumbnail_img;
+        $post->template = $request->template;
+        $post->publish = $request->publish;
+        $post->published_at = $request->published_at;
+        $post->save();
+
+        //$post->categories()->detach();
+        //$post->categories()->attach($request->category);
+        $tags = explode(",", $request->tag[1]);
+        $tags = preg_replace('!\s+!', ' ', $tags);
+        foreach ($tags as $key => $value) {
+            if (substr($value, 0, 1)==" ") {
+                $value = substr_replace($value, '', 0, 1);
+            }
+            $post_category = PostCategory::where('name',$value)->where('isCategory','!=' ,'1')->first();
+
+            if ($post_category!=null) {
+                $tags_id[$key] = $post_category->id;
+                //$post->categories()->detach($post_category->id);
+            } else {
+                $post_category = PostCategory::where('name',$value)->where('isCategory', null)->first();
+                if ($post_category!=null) {
+                    $tags_id[$key] = $post_category->id;
+                    //$post->categories()->detach($post_category->id);
+                } else {
+                    $post_category = New PostCategory;
+                    $post_category->name = $value;
+                    $post_category->slug = $this->slug($value);
+                    $post_category->save();
+                    $tags_id[$key] = $post_category->id;
+                }
+            }
+        }
+        $categories = array_merge($request->category,$tags_id);
+        $post->categories()->sync($categories);
     }
 
     /**
@@ -51,44 +111,24 @@ class PostController extends CeemasGlobalDataController
     public function store(Request $request)
     {
         //return $request;
-        /*$this->validate($request, [
-			'title' => 'required',
+        /*$validator = Validator::make($request->all(), [
+            'title' => 'required',
             'published' => 'required',
 			'url' => 'required',
-        ]);*/
-        $post = new Post;
-        $post->title = $request->title;
-        $post->author_id = $request->author_id;
-        $post->url = $request->url;
-        $post->content = $request->content;
-        $post->thumbnail_img = $request->thumbnail_img;
-        $post->template = $request->template;
-        $post->publish = $request->publish;
-        $post->published_at = $request->published_at;
-        $post->save();
+        ]);
+
+        if ($validator->fails()) {
+            $messages = $validator->messages();
+            //return $messages;
+            //return redirect()->back()->with(
+            //    'errors',(new ViewErrorBag)->put('default', $validator->getMessageBag()));
+            return redirect()->back()->withErrors($validator)->withInput($request->all());
+        }*/
+
+        //return $request;
+
+        $this->sendData($request);
         return redirect()->route('admin.post.index')->with('status','Post Added!');
-
-        $image_name="default.jpeg";
-        if ($request->file('file')) {
-            $file = $request->file('file');
-            $tujuan_upload = 'img/post/thumbnail';
-            $image_name= time().'.'.$file->getClientOriginalExtension();
-
-          // upload file
-          $file->move($tujuan_upload,$image_name);
-          //$pic_name=$file->getClientOriginalName();
-        }
-            Post::create([
-                'title' => $request->title,
-                'published' => $request->published,
-                'url' => $request->url,
-                'content' => $request->description_text,
-                'thumbnail_img' => $image_name
-            ]);
-
-
-
-        return redirect()->route('admin.post.index')->with('status','Article Success to Added!');
     }
 
     /**
@@ -97,8 +137,9 @@ class PostController extends CeemasGlobalDataController
      * @param  \App\Post  $post
      * @return \Illuminate\Http\Response
      */
-    public function show(Post $post,Request $request)
+    public function show(Post $Post,Request $request,$post)
     {
+        return $post;
         return view('ceemas::admin.post.show', compact('post'));
     }
 
@@ -111,7 +152,9 @@ class PostController extends CeemasGlobalDataController
     public function edit($post,Request $request)
     {
         $post = Post::where('id',$post)->first();
-        return view('ceemas::admin.post.create', compact('post'));
+        $category = $this->PC->data();
+        return view('ceemas::admin.post.create', compact('post'))
+        ->with($category);
     }
 
     /**
@@ -121,38 +164,13 @@ class PostController extends CeemasGlobalDataController
      * @param  \App\Post  $post
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Post $post)
+    public function update(Request $request, $post)
     {
+       //return $request;
 
-        $this->validate($request, [
-			'title' => 'required',
-            'published' => 'required',
-			'url' => 'required',
-        ]);
+        $this->sendData($request,$post);
+        return redirect()->route('admin.post.index')->with('status','Post Updated!');
 
-        $image_name="default.jpeg";
-        if ($request->file('file') && $request->pic_indicator == 'yes') {
-            $file = $request->file('file');
-            $tujuan_upload = 'img/post/thumbnail';
-            $image_name= time().'.'.$file->getClientOriginalExtension();
-
-          // upload file
-          $file->move($tujuan_upload,$image_name);
-          //$pic_name=$file->getClientOriginalName();
-          Post::where('id',$post->id)
-          ->update([
-              'thumbnail_img' => $image_name,
-          ]);
-        }
-
-        Post::where('id',$post->id)
-            ->update([
-                'title' => $request->title,
-                'published' => $request->published,
-                'url' => $request->url,
-                'content' => $request->description_text
-            ]);
-        return redirect()->route('admin.post.index')->with('status','Article Success to Update!');
     }
 
     /**

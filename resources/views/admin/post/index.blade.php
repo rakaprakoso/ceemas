@@ -5,13 +5,13 @@
 <a href="{{route('admin.post.create')}}"><button type="button" class="btn btn-success"><i class="fa fa-plus-circle"
             aria-hidden="true"></i> Add
         Article</button></a>
+@endsection
+@section('content')
 @if (session('status'))
 <div class="alert alert-success my-3" role="alert">
     {{ session('status') }}
 </div>
 @endif
-@endsection
-@section('content')
 <div class="row">
     <div class="col-12">
         <div class="card">
@@ -39,6 +39,8 @@
                             <th>No.</th>
                             <th>Title</th>
                             <th>Date</th>
+                            <th>Category</th>
+                            <th>Tag</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -48,6 +50,20 @@
                             <th scope="row">{{$loop->iteration}}</th>
                             <td>{{$item->title}}</td>
                             <td>{{$item->published_at}}</td>
+                            <td>
+                            @foreach ($item->categories as $item2)
+                            @if ($item2->isCategory=='1')
+                            {{$item2->name}},
+                            @endif
+                            @endforeach
+                            </td>
+                            <td>
+                                @foreach ($item->categories as $item2)
+                                @if ($item2->isCategory!='1')
+                                {{$item2->name}},
+                                @endif
+                                @endforeach
+                                </td>
                             <td><a href="{{route('admin.post.edit',$item->id)}}"
                                     class="badge badge-primary">Details</a></td>
                         </tr>

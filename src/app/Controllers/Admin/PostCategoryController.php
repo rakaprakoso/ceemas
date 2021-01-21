@@ -9,11 +9,20 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use Rakadprakoso\Ceemas\app\Controllers\CeemasGlobalDataController;
+use Rakadprakoso\Ceemas\app\PostCategory as PC;
 
 
 class PostCategoryController extends CeemasGlobalDataController
 {
     use helper;
+
+    public $PC;
+
+    public function __construct(PC $PC)
+    {
+        parent::__construct();
+        $this->PC = $PC;
+    }
 
     private function getAllData($request){
         if ($this->isCategory()) {
@@ -32,6 +41,7 @@ class PostCategoryController extends CeemasGlobalDataController
     //INPUT DATA
     public function index(Request $request)
     {
+        //return $this->PC->data();
         $data = $this->getAllData($request);
         return view('ceemas::admin.post_category.index')
         ->with('data',$data);

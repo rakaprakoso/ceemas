@@ -3,9 +3,9 @@
 @section('additional_head')
 
 <!-- Custom -->
-<script src="/assets_admin/plugins/ckeditor/ckeditor.js"></script>
-<link rel="stylesheet" href="/assets_admin/custom/style.css">
-<link rel="stylesheet" href="/assets_admin/plugins/bootstrap-tagsinput/src/bootstrap-tagsinput.css">
+<script src="/assets/vendor/ceemas/plugins/ckeditor/ckeditor.js"></script>
+<link rel="stylesheet" href="/assets/vendor/ceemas/custom/style.css">
+<link rel="stylesheet" href="/assets/vendor/ceemas/plugins/bootstrap4-tag-input/tagsinput.css">
 @endsection
 @section('additional_script')
 {{--<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js"></script>
@@ -57,8 +57,8 @@
 
     </script>--}}
 <!-- Select2 -->
-<script src="/assets_admin/plugins/select2/js/select2.full.min.js"></script>
-<script src="/assets_admin/plugins/bootstrap-tagsinput/src/bootstrap-tagsinput.js"></script>
+<script src="/assets/vendor/ceemas/plugins/select2/js/select2.full.min.js"></script>
+<script src="/assets/vendor/ceemas/plugins/bootstrap4-tag-input/tagsinput.js"></script>
 <script>
     $(function () {
         //Initialize Select2 Elements
@@ -72,15 +72,28 @@
             format: 'YYYY-MM-DD hh:mm',
             useCurrent: true,
         });
-        $('input[name="published_at"]').val(getCurrentDate());
+        if (isEmpty("{{ $helper->isCrudEdit() ? $post->published_at : old('published_at') }}")) {
+            $('input[name="published_at"]').val(getCurrentDate());
+        } else {
+            $('input[name="published_at"]').val(getCurrentDate("{{ $helper->isCrudEdit() ? $post->published_at : old('published_at') }}"));
+            //$('input[name="published_at"]').val($.datepicker.formatDate('yy-mm-dd', new Date("{{ $helper->isCrudEdit() ? $post->published_at : old('published_at') }}")));
+        }
+
+        $('input[name="tag[]"]').attr('autocomplete','off');
+
     });
     Number.prototype.padLeft = function (base, chr) {
         var len = (String(base || 10).length - String(this).length) + 1;
         return len > 0 ? new Array(len).join(chr || '0') + this : this;
     }
-
-    function getCurrentDate() {
-        var d = new Date,
+    function isEmpty(value){
+        return (value == null || value === '');
+    }
+    function getCurrentDate(date=null) {
+        var d = new Date();
+        if (date!=null) {
+            d = new Date(date);
+        }
             dformat = [d.getFullYear(),
                 (d.getMonth() + 1).padLeft(),
                 d.getDate().padLeft(),
@@ -158,13 +171,23 @@
 @section('content')
 <div class="row">
     <div class="col">
-        <form method="post" action="{{route('admin.post.store')}}" enctype="multipart/form-data">
-            <input name="title" id="input-title" class="form-control form-control-lg mb-3" type="text"
-                placeholder="Post Title">
+        <form method="post" action="{{ $helper->isCrudEdit() ? route('admin.post.update', $post->id) : route('admin.post.store') }}" enctype="multipart/form-data">
+            @if ($helper->isCrudEdit())
+                @method('put')
+            @endif
+            <div class="form-group mb-3">
+                <input name="title" id="input-title"
+                    class="form-control @error('title') is-invalid @enderror form-control-lg" type="text"
+                    placeholder="Post Title" value="{{ $helper->isCrudEdit() ? $post->title : old('title') }}">
+                @error('title')
+                <div class="invalid-feedback">
+                    {{$message}}
+                </div>
+                @enderror
+            </div>
             <div class="card card-secondary">
                 <div class="card-header">
                     <h3 class="card-title">Properties</h3>
-
                     <div class="card-tools">
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
                             <i class="fas fa-minus"></i>
@@ -180,63 +203,104 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Category</label>
-                                <select name="category" class="select2bs4" multiple="multiple"
-                                    data-placeholder="Select a State" style="width: 100%;">
-                                    <option>Alabama</option>
-                                    <option>Alaska</option>
-                                    <option>California</option>
-                                    <option>Delaware</option>
-                                    <option>Tennessee</option>
-                                    <option>Texas</option>
-                                    <option>Washington</option>
+
+                                <select name="category[]" class="select2bs4 @error('category') is-invalid @enderror"
+                                    multiple="multiple" data-placeholder="Category" style="width: 100%;">
+                                    @foreach ($category as $key => $item)
+                                    <option
+                                    @if (isset($post))
+                                    @foreach ($post->categories as $key2 => $item2)
+                                    @if ($item->id==$item2->id)
+                                    selected
+                                    @endif
+                                    @endforeach
+                                    @endif
+                                    value="{{$item->id}}">{{$item->name}}</option>
+                                    @endforeach
                                 </select>
+                                @error('category')
+                                <div class="invalid-feedback">
+                                    {{$message}}
+                                </div>
+                                @enderror
                             </div>
                             <div class="form-group">
                                 <label>Tags</label>
-                                <input type="text" value="Amsterdam,Washington,Sydney,Beijing,Cairo" data-role="tagsinput" />
-                                <select name="tag" multiple data-role="tagsinput" class="form-control"
-                                    style="width: 100%;">
-                                    <option value="Amsterdam">Amsterdam</option>
-                                    <option value="Washington">Washington</option>
-                                    <option value="Sydney">Sydney</option>
-                                    <option value="Beijing">Beijing</option>
-                                    <option value="Cairo">Cairo</option>
-                                </select>
+                                <input name="tag[]" type="text" class="form-control  @error('tag') is-invalid @enderror" data-role="tagsinput" autocomplete="off" value="
+                                @if (isset($post))
+                                @foreach ($post->categories as $item)
+                                    @if ($item->isCategory!='1')
+                                    {{$item->name}},
+                                    @endif
+                                @endforeach
+                                @endif
+                                ">
+                                @error('tag')
+                                <div class="invalid-feedback">
+                                    {{$message}}
+                                </div>
+                                @enderror
                             </div>
 
                             <div class="form-group">
                                 <label>Published at</label>
                                 <div class="input-group date" id="published_at" data-target-input="nearest">
                                     <input name="published_at" type="text" autocomplete="off"
-                                        class="form-control datetimepicker-input" data-target="#published_at" />
+                                        class="form-control @error('published_at') is-invalid @enderror datetimepicker-input"
+                                        data-target="#published_at" />
                                     <div class="input-group-append" data-target="#published_at"
                                         data-toggle="datetimepicker">
                                         <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                                     </div>
                                 </div>
+                                @error('published_at')
+                                <div class="invalid-feedback">
+                                    {{$message}}
+                                </div>
+                                @enderror
                             </div>
                             <div class="form-group">
                                 <label>Visibility</label>
-                                <select name="publish" class="select2bs4" style="width: 100%;">
-                                    <option selected value="1">Publish</option>
-                                    <option value="0">Draft</option>
+                                <select name="publish" class="select2bs4 @error('publish') is-invalid @enderror"
+                                    style="width: 100%;">
+                                    <option
+                                    @if (isset($post->publish) && $post->publish=='1')
+                                        selected
+                                    @endif
+                                        value="1">Publish</option>
+                                    <option
+                                    @if (isset($post->publish) && $post->publish=='0')
+                                    selected
+                                    @endif
+                                    value="0">Draft</option>
                                 </select>
+                                @error('publish')
+                                <div class="invalid-feedback">
+                                    {{$message}}
+                                </div>
+                                @enderror
                             </div>
 
                         </div>
                         <div class="col-md-6 d-flex flex-column">
                             <div class="form-group">
                                 <label>URL</label>
-                                <input name="url" id="input-url" type="text" class="form-control"
+                                <input name="url" id="input-url" type="text"
+                                    class="form-control @error('url') is-invalid @enderror" value="{{ $helper->isCrudEdit() ? $post->url : old('url') }}"
                                     placeholder="Enter url">
+                                @error('url')
+                                <div class="invalid-feedback">
+                                    {{$message}}
+                                </div>
+                                @enderror
                             </div>
                             <div class="form-group d-flex flex-grow-1 flex-column">
                                 <label>Featured Image</label>
                                 <div class="flex-grow-1 border rounded d-flex" id="thumbnail_image">
                                     <button type="button" id="remove_image" class="btn btn-danger d-none"><i
                                             class="fas fa-times-circle"></i></button>
-                                    <img src="/assets_admin/img/icons/img_icon.png" id="temp_image" class="m-auto"
-                                        alt="">
+                                    <img src="/assets/vendor/ceemas/img/icons/img_icon.png" id="temp_image"
+                                        class="m-auto" alt="">
                                 </div>
                                 <div class="input-group">
                                     <input name="thumbnail_img" type="text" id="image_label" readonly
@@ -258,6 +322,7 @@
 
             </div>
             <textarea name="content" class="mb-5" id="editor1" rows="40">
+                {{ $helper->isCrudEdit() ? $post->content : old('content') }}
             </textarea>
             {{--<div class="custom-control custom-switch">
                         <input type="checkbox" class="custom-control-input" id="propSwitch">

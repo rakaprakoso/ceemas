@@ -54,6 +54,19 @@ trait helper
         //$request->attributes->set('role', $role);
         //return $account;
     }
+
+    //Make slug
+    public function slug($slug){
+        $slug = strtolower($slug);
+        $slug = str_replace(" ","-",$slug);
+        $slug = str_replace("_-_","-",$slug);
+        $slug = str_replace("___","-",$slug);
+        $slug = str_replace("__","-",$slug);
+        $slug = str_replace("--","-",$slug);
+        $slug = str_replace(",","",$slug);
+        $slug = str_replace(".","",$slug);
+        return $slug;
+    }
     public function getTimeZones() {
         $timezones = array (
             'America' => array (

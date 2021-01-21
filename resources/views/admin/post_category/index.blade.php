@@ -27,6 +27,7 @@
             $("#input-slug").val(url);
         });
     });
+
 </script>
 @endsection
 @section('content_header')
@@ -39,13 +40,15 @@
     </button>
 </a>
 @endif
+
+
+@endsection
+@section('content')
 @if (session('status'))
 <div class="alert alert-success my-3" role="alert">
     {{ session('status') }}
 </div>
 @endif
-@endsection
-@section('content')
 <div class="row">
     <div class="col-lg-4">
         <div class="card card-primary">
@@ -53,32 +56,33 @@
             <!-- $helper->isCrudEdit() & $helper->checkCrudType() -->
             <!-- form start -->
             @php
-                $isCategory = $helper->isCategory()?'category':'tag';
+            $isCategory = $helper->isCategory()?'category':'tag';
             @endphp
-            <form class="p-3" method="post" action="{{ $helper->isCrudEdit() ? route('admin.'.$isCategory.'.update', $post_category->id) : route('admin.'.$isCategory.'.store') }}"
+            <form class="p-3" method="post"
+                action="{{ $helper->isCrudEdit() ? route('admin.'.$isCategory.'.update', $post_category->id) : route('admin.'.$isCategory.'.store') }}"
                 enctype="multipart/form-data">
                 @csrf
                 @if ($helper->isCrudEdit())
-                    @method('put')
+                @method('put')
                 @endif
                 @if ($helper->isCategory())
-                    <input type="hidden" name="isCategory" value="1">
+                <input type="hidden" name="isCategory" value="1">
                 @endif
                 <div class="form-group">
                     <label>Name</label>
-                    <input type="text" class="form-control @error('name') is-invalid @enderror"
-                        id="input-name" aria-describedby="" placeholder="Enter name" name="name"
+                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="input-name"
+                        aria-describedby="" placeholder="Enter name" name="name"
                         value="{{ $helper->isCrudEdit() ? $post_category->name : old('name') }}">
                     @error('name')
-                        <div class="invalid-feedback">
-                            {{$message}}
-                        </div>
+                    <div class="invalid-feedback">
+                        {{$message}}
+                    </div>
                     @enderror
                 </div>
                 <div class="form-group">
                     <label>Description</label>
-                    <textarea class="form-control @error('description') is-invalid @enderror"
-                        name="description" id="input-description" placeholder="Enter description"
+                    <textarea class="form-control @error('description') is-invalid @enderror" name="description"
+                        id="input-description" placeholder="Enter description"
                         rows="3">{{ $helper->isCrudEdit() ? $post_category->description : old('description') }}</textarea>
                     @error('description')
                     <div class="invalid-feedback">
@@ -92,13 +96,13 @@
                     <select name="parent" class="form-control select2" style="width: 100%;" id="parent-slug">
                         <option value="" selected>None</option>
                         @foreach ($data['post_categories_L'] as $item)
-                            @if ($helper->isCrudEdit() && $item->id==$post_category->parent)
-                                <option value="{{$item->id}}" selected>{{$item->name}}</option>
-                            @elseif($helper->isCrudEdit() && $item->id!=$post_category->id)
-                                <option value="{{$item->id}}">{{$item->name}}</option>
-                            @elseif($helper->isCrudEdit()==false)
-                                <option value="{{$item->id}}">{{$item->name}}</option>
-                            @endif
+                        @if ($helper->isCrudEdit() && $item->id==$post_category->parent)
+                        <option value="{{$item->id}}" selected>{{$item->name}}</option>
+                        @elseif($helper->isCrudEdit() && $item->id!=$post_category->id)
+                        <option value="{{$item->id}}">{{$item->name}}</option>
+                        @elseif($helper->isCrudEdit()==false)
+                        <option value="{{$item->id}}">{{$item->name}}</option>
+                        @endif
                         @endforeach
                     </select>
                 </div>
@@ -106,7 +110,8 @@
                 <div class="form-group">
                     <label>Slug</label>
                     <input type="text" class="form-control @error('slug') is-invalid @enderror" id="input-slug"
-                        aria-describedby="" placeholder="Enter slug" name="slug" value="{{ $helper->isCrudEdit() ? $post_category->slug : old('slug') }}">
+                        aria-describedby="" placeholder="Enter slug" name="slug"
+                        value="{{ $helper->isCrudEdit() ? $post_category->slug : old('slug') }}">
                     @error('slug')
                     <div class="invalid-feedback">
                         {{$message}}
@@ -124,8 +129,8 @@
                 <div class="card-tools">
                     <form action="{{route('admin.category.index')}}" method="get">
                         <div class="input-group input-group-sm" style="width: 150px;">
-                            <input type="text" name="q" class="form-control float-right"
-                                    placeholder="Search" value="{{Request::get('q')}}">
+                            <input type="text" name="q" class="form-control float-right" placeholder="Search"
+                                value="{{Request::get('q')}}">
                             <div class="input-group-append">
                                 <button type="submit" class="btn btn-default">
                                     <i class="fas fa-search"></i>
@@ -154,6 +159,7 @@
                             <td>{{$item->name}}</td>
                             <td>{{$item->description}}</td>
                             <td>{{$item->slug}}</td>
+                            @if ($helper->isCategory())
                             <td><a href="{{route('admin.category.edit',$item->id).'?q='.Request::get('q').'&page='.Request::get('page')}}"
                                     class="badge badge-primary">Details
                                 </a>
@@ -162,9 +168,23 @@
                                     @method('delete')
                                     <button type="submit" class="btn btn-danger badge badge-danger">
                                         <i class="fa fa-trash" aria-hidden="true"></i> Delete
-                                        </button>
+                                    </button>
                                 </form>
                             </td>
+                            @else
+                            <td><a href="{{route('admin.tag.edit',$item->id).'?q='.Request::get('q').'&page='.Request::get('page')}}"
+                                    class="badge badge-primary">Details
+                                </a>
+                                <form action="{{route('admin.tag.destroy',$item->id)}}" method="post">
+                                    @csrf
+                                    @method('delete')
+                                    <button type="submit" class="btn btn-danger badge badge-danger">
+                                        <i class="fa fa-trash" aria-hidden="true"></i> Delete
+                                    </button>
+                                </form>
+                            </td>
+                            @endif
+
                         </tr>
                         @endforeach
                     </tbody>

@@ -46,6 +46,7 @@ class AuthenticationController extends Controller
             return back()->with('status','Account not found!');
         } else{
             if (Hash::check($pass, $account->password)) {
+                $request->session()->put('user_id',$account->id);
                 $request->session()->put('username',$user);
                 $request->session()->put('name',$account->name);
                 if ($request->remember_me=="on") {

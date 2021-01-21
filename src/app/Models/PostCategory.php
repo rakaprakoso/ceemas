@@ -13,7 +13,7 @@ class PostCategory extends Model
     }
     public function scopeTag($query)
     {
-        return $query->where('isCategory', null);
+        return $query->where('isCategory', null)->orWhere('isCategory', '0');
     }
     public function scopeCategory($query)
     {
@@ -32,4 +32,9 @@ class PostCategory extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
     protected $table = 'ceemas_post_categories';
+    public function posts()
+    {
+        return $this->belongsToMany('Rakadprakoso\Ceemas\app\Models\Post',
+        'ceemas_post_post_category', 'category_id','post_id');
+    }
 }
