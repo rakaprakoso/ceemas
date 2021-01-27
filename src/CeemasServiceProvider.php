@@ -68,6 +68,11 @@ class CeemasServiceProvider extends ServiceProvider
         ], 'public');
         $this->loadMigrationsFrom(__DIR__.'/database/migrations');*/
 
+        // publish controller
+        $this->publishes([
+            __DIR__.'/../controller/CeemasPageController.php' => app_path('Http/Controllers/CeemasPageController.php'),
+        ], 'ceemas-controller');
+
         // publish config
         $this->publishes([
             __DIR__

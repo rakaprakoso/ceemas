@@ -197,7 +197,7 @@
                with font-awesome or any other icon font library -->
                         <li class="nav-header">FRONTEND</li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="{{route('admin.post.index')}}" class="nav-link">
                                 <i class="nav-icon fas fa-edit"></i>
                                 <p>
                                     Posts
@@ -206,25 +206,25 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="pages/forms/general.html" class="nav-link">
+                                    <a href="{{route('admin.post.index')}}" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>All Post</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="pages/forms/advanced.html" class="nav-link">
+                                    <a href="{{route('admin.post.create')}}" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Add New</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="pages/forms/editors.html" class="nav-link">
+                                    <a href="{{route('admin.category.index')}}" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Category</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="pages/forms/validation.html" class="nav-link">
+                                    <a href="{{route('admin.tag.index')}}" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Tags</p>
                                     </a>
@@ -232,7 +232,7 @@
                             </ul>
                         </li>
                         <li class="nav-item">
-                            <a href="#link" class="nav-link">
+                            <a href="{{route('admin.filemanager')}}" class="nav-link">
                                 <i class="nav-icon far fa-folder"></i>
                                 <p>
                                     File Manager
@@ -249,13 +249,13 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="pages/forms/general.html" class="nav-link">
+                                    <a href="{{route('admin.page.index')}}" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>All Pages</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="pages/forms/advanced.html" class="nav-link">
+                                    <a href="{{route('admin.page.create')}}" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Add Page</p>
                                     </a>
@@ -326,7 +326,7 @@
                         @endif
 
                         <li class="nav-item">
-                            <a href="#link" class="nav-link">
+                            <a href="{{route('admin.setting')}}" class="nav-link">
                                 <i class="nav-icon fas fa-cogs"></i>
                                 <p>
                                     Setting

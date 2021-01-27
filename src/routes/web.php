@@ -41,6 +41,7 @@ Route::group([
         //Route::get('/dashboard', 'CeemasController@home')->name('dashboard');
 
         Route::resource('post', 'Admin\PostController');
+        Route::resource('page', 'Admin\PostController');
         Route::resource('category', 'Admin\PostCategoryController');
         Route::resource('tag', 'Admin\PostCategoryController');
 

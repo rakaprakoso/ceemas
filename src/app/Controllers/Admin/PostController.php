@@ -3,6 +3,7 @@
 namespace Rakadprakoso\Ceemas\app\Controllers\Admin;
 
 use Rakadprakoso\Ceemas\app\models\Post;
+use Rakadprakoso\Ceemas\app\models\CustomPost;
 use Rakadprakoso\Ceemas\app\models\PostCategory;
 use Rakadprakoso\Ceemas\app\Traits\helper;
 use Illuminate\Http\Request;
@@ -11,6 +12,7 @@ use App\Http\Controllers\Controller;
 use Rakadprakoso\Ceemas\app\Controllers\CeemasGlobalDataController;
 use Rakadprakoso\Ceemas\app\PostCategory as PC;
 use Validator;
+use Illuminate\Support\Facades\Storage;
 
 
 class PostController extends CeemasGlobalDataController
@@ -23,6 +25,17 @@ class PostController extends CeemasGlobalDataController
         parent::__construct();
         $this->PC = $PC;
     }
+    private function getAllData($request){
+        if ($this->isPage()) {
+            $data = Post::page()->search($request->q)->Paginate(10);
+        } else{
+            $data = Post::post()->search($request->q)->Paginate(10);
+        }
+        return $data;
+    }
+    private function redirectPage(){
+        return $this->isPage() ? 'admin.page.index':'admin.post.index';
+    }
     /**
      * Display a listing of the resource.
      *
@@ -31,15 +44,14 @@ class PostController extends CeemasGlobalDataController
     public function index(Request $request)
     {
 
-        /*if ($request->session()->has('username')) {
-            $post = Post::all();
+        $post = $this->getAllData($request);
+        if ($this->isPage()) {
+            return view('ceemas::admin.page.index')
+            ->with('page',$post);
+        } else{
             return view('ceemas::admin.post.index', compact('post'));
-        }else {
-            return redirect('/ia-admin');
-        }*/
-        //return "Raka";
-        $post = Post::all();
-        return view('ceemas::admin.post.index', compact('post'));
+        }
+
     }
 
     /**
@@ -49,9 +61,14 @@ class PostController extends CeemasGlobalDataController
      */
     public function create(Request $request)
     {
-        $category = $this->PC->data();
-        return view('ceemas::admin.post.create')
-        ->with($category);
+        if ($this->isPage()) {
+            return view('ceemas::admin.page.create');
+        } else{
+            $category = $this->PC->data();
+            return view('ceemas::admin.post.create')
+            ->with($category);
+        }
+
     }
 
     private function sendData($request, $id=null){
@@ -68,38 +85,59 @@ class PostController extends CeemasGlobalDataController
         $post->thumbnail_img = $request->thumbnail_img;
         $post->template = $request->template;
         $post->publish = $request->publish;
+        $post->isPage = $request->isPage;
+        if ($request->codeEditor == "on") {
+            $post->isCustom = "1";
+        }
         $post->published_at = $request->published_at;
         $post->save();
 
         //$post->categories()->detach();
         //$post->categories()->attach($request->category);
-        $tags = explode(",", $request->tag[1]);
-        $tags = preg_replace('!\s+!', ' ', $tags);
-        foreach ($tags as $key => $value) {
-            if (substr($value, 0, 1)==" ") {
-                $value = substr_replace($value, '', 0, 1);
-            }
-            $post_category = PostCategory::where('name',$value)->where('isCategory','!=' ,'1')->first();
+        if ($this->isPage()==false) {
+            //return view('ceemas::admin.page.create');
+            $tags = explode(",", $request->tag[1]);
+            $tags = preg_replace('!\s+!', ' ', $tags);
+            foreach ($tags as $key => $value) {
+                if (substr($value, 0, 1)==" ") {
+                    $value = substr_replace($value, '', 0, 1);
+                }
+                $post_category = PostCategory::where('name',$value)->where('isCategory','!=' ,'1')->first();
 
-            if ($post_category!=null) {
-                $tags_id[$key] = $post_category->id;
-                //$post->categories()->detach($post_category->id);
-            } else {
-                $post_category = PostCategory::where('name',$value)->where('isCategory', null)->first();
                 if ($post_category!=null) {
                     $tags_id[$key] = $post_category->id;
                     //$post->categories()->detach($post_category->id);
                 } else {
-                    $post_category = New PostCategory;
-                    $post_category->name = $value;
-                    $post_category->slug = $this->slug($value);
-                    $post_category->save();
-                    $tags_id[$key] = $post_category->id;
+                    $post_category = PostCategory::where('name',$value)->where('isCategory', null)->first();
+                    if ($post_category!=null) {
+                        $tags_id[$key] = $post_category->id;
+                        //$post->categories()->detach($post_category->id);
+                    } else {
+                        $post_category = New PostCategory;
+                        $post_category->name = $value;
+                        $post_category->slug = $this->slug($value);
+                        $post_category->save();
+                        $tags_id[$key] = $post_category->id;
+                    }
                 }
             }
+            $categories = array_merge($request->category,$tags_id);
+            $post->categories()->sync($categories);
         }
-        $categories = array_merge($request->category,$tags_id);
-        $post->categories()->sync($categories);
+        if ($request->codeEditor == "on") {
+            $customPost = CustomPost::where('post_id',$post->id)->first();
+            //return $customPost;
+            $customPost = $customPost == null ? New CustomPost : CustomPost::find($customPost->id);
+            $customPost->post_id = $post->id;
+            $customPost->view = $request->viewFile;
+            $customPost->controller = $request->controllerFile;
+            $customPost->function_controller = $request->functionController;
+            $customPost->save();
+
+            Storage::disk('project')->put('resources/views/page/'.$request->viewFile.'.blade.php', $request->view_code);
+            Storage::disk('project')->put('app/Http/Controllers/'.$request->controllerFile.'.php', $request->controller_code);
+            Storage::disk('project')->put('routes/web.php', $request->route_code);
+        }
     }
 
     /**
@@ -110,25 +148,14 @@ class PostController extends CeemasGlobalDataController
      */
     public function store(Request $request)
     {
-        //return $request;
-        /*$validator = Validator::make($request->all(), [
-            'title' => 'required',
-            'published' => 'required',
-			'url' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            $messages = $validator->messages();
-            //return $messages;
-            //return redirect()->back()->with(
-            //    'errors',(new ViewErrorBag)->put('default', $validator->getMessageBag()));
-            return redirect()->back()->withErrors($validator)->withInput($request->all());
-        }*/
-
-        //return $request;
 
         $this->sendData($request);
-        return redirect()->route('admin.post.index')->with('status','Post Added!');
+        if ($this->isPage()) {
+            return redirect()->route('admin.page.index')->with('status','Page Added!');
+        } else{
+            return redirect()->route('admin.post.index')->with('status','Post Added!');
+        }
+
     }
 
     /**
@@ -152,9 +179,28 @@ class PostController extends CeemasGlobalDataController
     public function edit($post,Request $request)
     {
         $post = Post::where('id',$post)->first();
-        $category = $this->PC->data();
-        return view('ceemas::admin.post.create', compact('post'))
-        ->with($category);
+        //return dd($post->custom_content);
+        if ($this->isPage()) {
+            if ($post->isCustom=='1') {
+                $view_code = Storage::disk('project')->get('resources/views/page/'.$post->custom_content->view.'.blade.php');
+                $controller_code = Storage::disk('project')->get('app/Http/Controllers/'.$post->custom_content->controller.'.php');
+                $route_code = Storage::disk('project')->get('routes/web.php');
+                //return $controller_code;
+                return view('ceemas::admin.page.create')
+                ->with('controller_code',$controller_code)
+                ->with('route_code',$route_code)
+                ->with('view_code',$view_code)
+                ->with('page',$post);
+            }
+            return view('ceemas::admin.page.create')
+            ->with('page',$post);
+        } else{
+            $category = $this->PC->data();
+            return view('ceemas::admin.post.create', compact('post'))
+            ->with($category);
+        }
+
+
     }
 
     /**
@@ -169,7 +215,14 @@ class PostController extends CeemasGlobalDataController
        //return $request;
 
         $this->sendData($request,$post);
-        return redirect()->route('admin.post.index')->with('status','Post Updated!');
+        //Storage::disk('project')->get('resources/views/page/index.blade.php');
+
+        if ($this->isPage()) {
+            return redirect()->route('admin.page.index')->with('status','Page Updated!');
+        } else{
+            return redirect()->route('admin.post.index')->with('status','Post Updated!');
+        }
+
 
     }
 
@@ -179,9 +232,14 @@ class PostController extends CeemasGlobalDataController
      * @param  \App\Post  $post
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Post $post)
+    public function destroy($post)
     {
+        $post = Post::where('id',$post)->first();
         Post::destroy($post->id);
-        return redirect('/ia-admin/post')->with('status','Post Has Been Deleted!');
+        if ($this->isPage()) {
+            return redirect()->route('admin.page.index')->with('status','Page Deleted!');
+        } else{
+            return redirect()->route('admin.post.index')->with('status','Post Deleted!');
+        }
     }
 }

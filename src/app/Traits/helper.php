@@ -32,6 +32,10 @@ trait helper
         $type = collect(request()->segments())[1];
         return $type == 'category' ? true : false;
     }
+    public function isPage(){
+        $type = collect(request()->segments())[1];
+        return $type == 'page' ? true : false;
+    }
 
     //Role Check
     public function roleCheck($username){

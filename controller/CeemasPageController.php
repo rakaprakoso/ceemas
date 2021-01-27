@@ -1,23 +1,17 @@
 <?php
 
-namespace Rakadprakoso\Ceemas\app\Controllers;
+namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests;
-use App\Http\Controllers\Controller;
 use Rakadprakoso\Ceemas\app\Controllers\CeemasGlobalDataController;
 use Cookie;
 
-class CeemasController extends CeemasGlobalDataController
+class CeemasPageController extends CeemasGlobalDataController
 {
     //
     public function home(Request $request){
         return view('ceemas::admin.page.index');
-        if ($request->get('status')) {
-            return view('ceemas::admin.page.index');
-        } else{
-            return view('ceemas::admin.authentication.login');
-        }
     }
 
     public function login_page(){

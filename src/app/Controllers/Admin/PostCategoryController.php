@@ -55,7 +55,7 @@ class PostCategoryController extends CeemasGlobalDataController
         ->with('data',$data);
     }
 
-    //SEND DATA
+    //SEND DATA -
     private function sendData($request, $id=null){
         $this->validate($request, [
 			'name' => 'required',
