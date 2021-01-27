@@ -1,0 +1,39 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateCeemasAccountsTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('ceemas_accounts', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('username');
+            $table->string('email');
+            $table->timestamp('email_verified_at')->nullable();
+            $table->biginteger('role_id')->unsigned()->nullable();
+            $table->foreign('role_id')->references('id')->on('ceemas_role_accounts')->onDelete('cascade');
+            $table->string('password');
+            $table->rememberToken();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('ceemas_accounts');
+    }
+}
