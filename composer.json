@@ -21,7 +21,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "rakadprakoso\\ceemas\\CeemasServiceProvider"
+                "Rakadprakoso\\Ceemas\\CeemasServiceProvider"
             ]
         }
     }
